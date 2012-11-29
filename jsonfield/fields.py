@@ -3,25 +3,7 @@ from django.core.serializers.json import DjangoJSONEncoder
 from django.utils import simplejson as json
 from django.utils.translation import ugettext_lazy as _
 
-from django.forms.fields import Field
-from django.forms.util import ValidationError as FormValidationError
-
-
-class JSONFormField(Field):
-    def clean(self, value):
-
-        if not value and not self.required:
-            return None
-
-        value = super(JSONFormField, self).clean(value)
-
-        if isinstance(value, basestring):
-            try:
-                json.loads(value)
-            except ValueError:
-                raise FormValidationError(_("Enter valid JSON"))
-        return value
-
+from jsonformfieldex.field import JSONFormFieldEx
 
 class JSONFieldBase(models.Field):
 
@@ -31,6 +13,8 @@ class JSONFieldBase(models.Field):
     def __init__(self, *args, **kwargs):
         self.dump_kwargs = kwargs.pop('dump_kwargs', {'cls': DjangoJSONEncoder})
         self.load_kwargs = kwargs.pop('load_kwargs', {})
+        self.fields = kwargs.pop('fields', {})
+        self.allow_json_input = kwargs.pop('allow_json_input', False)
 
         super(JSONFieldBase, self).__init__(*args, **kwargs)
 
@@ -68,8 +52,10 @@ class JSONFieldBase(models.Field):
     def formfield(self, **kwargs):
 
         if "form_class" not in kwargs:
-            kwargs["form_class"] = JSONFormField
+            kwargs["form_class"] = JSONFormFieldEx
 
+        kwargs['fields'] = self.fields
+        kwargs['allow_json_input'] = self.allow_json_input
         field = super(JSONFieldBase, self).formfield(**kwargs)
 
         if not field.help_text:
