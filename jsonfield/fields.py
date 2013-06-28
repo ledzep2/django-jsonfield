@@ -13,8 +13,9 @@ class JSONFieldBase(models.Field):
     def __init__(self, *args, **kwargs):
         self.dump_kwargs = kwargs.pop('dump_kwargs', {'cls': DjangoJSONEncoder})
         self.load_kwargs = kwargs.pop('load_kwargs', {})
-        self.fields = kwargs.pop('fields', {})
+        self._fields = kwargs.pop('fields', {})
         self.allow_json_input = kwargs.pop('allow_json_input', False)
+        self.allow_empty = kwargs.pop('allow_empty', True)
 
         super(JSONFieldBase, self).__init__(*args, **kwargs)
 
@@ -54,8 +55,9 @@ class JSONFieldBase(models.Field):
         if "form_class" not in kwargs:
             kwargs["form_class"] = JSONFormFieldEx
 
-        kwargs['fields'] = self.fields
+        kwargs['fields'] = self._fields
         kwargs['allow_json_input'] = self.allow_json_input
+        kwargs['allow_empty'] = self.allow_empty
         field = super(JSONFieldBase, self).formfield(**kwargs)
 
         if not field.help_text:

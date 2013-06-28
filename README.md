@@ -29,15 +29,18 @@ And `MyCustomerForm` renders like this:
 Usage
 ------
 
-Patched version of `JSONField` constructor takes two arguments itself. The original JSONField arguments still work.
+Patched version of `JSONField` constructor takes three arguments itself. The original JSONField arguments still work.
 
-* `fields`: a dict of fields
-You can provide either field type or field instance for each field.
+* `fields`: a dict of fields  
+You can provide either field type or field instance for each field. `Fields` also supports SortedDict or [(k,v)...] to preserve ordering of fields.
 
-* `allow_json_input`: True|False
-If True, it will render an additional textarea allowing user to enter arbitary json string (just like jsonfield)
+* `allow_json_input`: True|False  
+If True, it will render an additional textarea allowing user to enter arbitary json string (just like jsonfield). The value in this field will be loaded to python dict and merged RECURSIVELY into the fielded values with priority.
 
 Note: when `fields` is empty, `allow_json_input` will be automatically set to True
+
+* `allow_empty`: True|False  
+If False, cleaned value dict will be filtered to keep only keys that have values.
 
 ***
 
@@ -56,5 +59,5 @@ from jsonfield import JSONField
 
 class MyModel(models.Model):
 	json = JSONField()
-	
+
 For some DB backends, if you need to use the field in indexes or uniqueness constraints, the default JSONField, (which is a subclass of TextField) may not be suitable. For those cases, JSONCharField (a subclass of CharField) is provided. You will of course need to specify max_length, and it is your responsibility to ensure that this length is sufficient to hold whatever you would like the field to contain.
